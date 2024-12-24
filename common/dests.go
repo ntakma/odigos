@@ -34,6 +34,7 @@ const (
 	NopDestinationType                    DestinationType = "nop"
 	OpsVerseDestinationType               DestinationType = "opsverse"
 	OtlpHttpDestinationType               DestinationType = "otlphttp"
+	OtlpHttpHeaderAuthDestinationType     DestinationType = "otlphttpheaderauth"
 	PrometheusDestinationType             DestinationType = "prometheus"
 	QrynDestinationType                   DestinationType = "qryn"
 	QrynOSSDestinationType                DestinationType = "qryn-oss"
