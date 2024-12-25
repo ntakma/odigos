@@ -13,6 +13,7 @@ const (
 	otlpHttpEndpointKey          = "OTLP_HTTP_ENDPOINT"
 	otlpHttpBasicAuthUsernameKey = "OTLP_HTTP_BASIC_AUTH_USERNAME"
 	otlpHttpBasicAuthPasswordKey = "OTLP_HTTP_BASIC_AUTH_PASSWORD"
+	OtlpHttpAuthHeaderKey        = "OTLP_HTTP_AUTH_HEADER_KEY"
 )
 
 type OTLPHttp struct{}
@@ -32,27 +33,35 @@ func (g *OTLPHttp) ModifyConfig(dest ExporterConfigurer, currentConfig *Config) 
 	if err != nil {
 		return errors.Join(err, errors.New("otlp http endpoint invalid, gateway will not be configured for otlp http"))
 	}
-
+	//parsedUrlEndpoint
+	exporterConf := GenericMap{
+		"endpoint": parsedUrl,
+	}
 	basicAuthExtensionName, basicAuthExtensionConf, err := applyBasicAuth(dest)
 	if err != nil {
 		return errors.Join(err, errors.New("failed to apply basic auth to otlp http exporter"))
 	}
 
-	// add authenticator extension
+	// add authenticator extension if use basic auth
 	if basicAuthExtensionName != "" && basicAuthExtensionConf != nil {
 		currentConfig.Extensions[basicAuthExtensionName] = *basicAuthExtensionConf
 		currentConfig.Service.Extensions = append(currentConfig.Service.Extensions, basicAuthExtensionName)
-	}
-
-	otlpHttpExporterName := "otlphttp/generic-" + dest.GetID()
-	exporterConf := GenericMap{
-		"endpoint": parsedUrl,
-	}
-	if basicAuthExtensionName != "" {
 		exporterConf["auth"] = GenericMap{
 			"authenticator": basicAuthExtensionName,
 		}
 	}
+	// add authentication with header key
+	headerAuthExtentionName, headerAuthExtentionConf, err := applyHeaderAuth(dest)
+	if err != nil {
+		return errors.Join(err, errors.New("failed to apply header auth to otlp http exporter"))
+	}
+	if headerAuthExtentionName != "" && headerAuthExtentionConf != nil {
+		currentConfig.Extensions[headerAuthExtentionName] = *headerAuthExtentionConf
+		currentConfig.Service.Extensions = append(currentConfig.Service.Extensions, headerAuthExtentionName)
+		exporterConf["headers"] = exporterConf
+	}
+	otlpHttpExporterName := "otlphttp/generic-" + dest.GetID()
+
 	currentConfig.Exporters[otlpHttpExporterName] = exporterConf
 
 	if isTracingEnabled(dest) {
@@ -105,6 +114,22 @@ func applyBasicAuth(dest ExporterConfigurer) (extensionName string, extensionCon
 		"client_auth": GenericMap{
 			"username": username,
 			"password": fmt.Sprintf("${%s}", otlpHttpBasicAuthPasswordKey),
+		},
+	}
+
+	return extensionName, extensionConf, nil
+}
+func applyHeaderAuth(dest ExporterConfigurer) (extensionName string, extensionConf *GenericMap, err error) {
+
+	authHeaderKey := dest.GetConfig()[OtlpHttpAuthHeaderKey]
+	if authHeaderKey == "" {
+		return "", nil, nil
+	}
+
+	extensionName = "headerAuth/otlphttp-" + dest.GetID()
+	extensionConf = &GenericMap{
+		"header": GenericMap{
+			"x-api-key": fmt.Sprintf("${%s}", OtlpHttpAuthHeaderKey),
 		},
 	}
 

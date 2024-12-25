@@ -5,6 +5,7 @@ FROM python:3.11.9 AS python-builder
 ARG ODIGOS_VERSION
 WORKDIR /python-instrumentation
 COPY ../agents/python ./agents/configurator
+COPY ../agents/java-agent ./agents/java-agent
 RUN pip install ./agents/configurator/  --target workspace
 RUN echo "VERSION = \"$ODIGOS_VERSION\";" > /python-instrumentation/workspace/initializer/version.py
 
@@ -70,11 +71,11 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
     fi
 
 RUN ARCH_SUFFIX=$(cat /tmp/arch_suffix) && \
-    wget https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/releases/download/${DOTNET_OTEL_VERSION}/opentelemetry-dotnet-instrumentation-linux-glibc-${ARCH_SUFFIX}.zip && \
+    wget --no-check-certificate https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/releases/download/${DOTNET_OTEL_VERSION}/opentelemetry-dotnet-instrumentation-linux-glibc-${ARCH_SUFFIX}.zip && \
     unzip opentelemetry-dotnet-instrumentation-linux-glibc-${ARCH_SUFFIX}.zip && \
     rm opentelemetry-dotnet-instrumentation-linux-glibc-${ARCH_SUFFIX}.zip && \
     mv linux-$ARCH_SUFFIX linux-glibc-$ARCH_SUFFIX && \
-    wget https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/releases/download/${DOTNET_OTEL_VERSION}/opentelemetry-dotnet-instrumentation-linux-musl-${ARCH_SUFFIX}.zip && \
+    wget --no-check-certificate https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/releases/download/${DOTNET_OTEL_VERSION}/opentelemetry-dotnet-instrumentation-linux-musl-${ARCH_SUFFIX}.zip && \
     unzip opentelemetry-dotnet-instrumentation-linux-musl-${ARCH_SUFFIX}.zip "linux-musl-$ARCH_SUFFIX/*" -d . && \
     rm opentelemetry-dotnet-instrumentation-linux-musl-${ARCH_SUFFIX}.zip
 
@@ -99,7 +100,8 @@ WORKDIR /instrumentations
 
 # Java
 ARG JAVA_OTEL_VERSION=v2.10.0
-ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/$JAVA_OTEL_VERSION/opentelemetry-javaagent.jar /instrumentations/java/javaagent.jar
+#ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/$JAVA_OTEL_VERSION/opentelemetry-javaagent.jar /instrumentations/java/javaagent.jar
+COPY --from=python-builder  /python-instrumentation/java-agent/opentelemetry-javaagent-v2.10.0.jar  /instrumentations/java/javaagent.jar
 RUN chmod 644 /instrumentations/java/javaagent.jar
 
 # Python

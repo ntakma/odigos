@@ -1,5 +1,5 @@
 image:
-  tag: ""
+  tag: "v1.0.139"
 imagePullSecrets: []
 
 # namespaces not to show in odigos ui
@@ -105,7 +105,7 @@ collectorNode:
 
 autoscaler:
   image:
-    repository: keyval/odigos-autoscaler
+    repository: trunganh04/odigos-autoscaler
   nodeSelector:
     kubernetes.io/os: linux
   tolerations: []
@@ -113,7 +113,7 @@ autoscaler:
 
 scheduler:
   image:
-    repository: keyval/odigos-scheduler
+    repository: trunganh04/odigos-scheduler
   nodeSelector:
     kubernetes.io/os: linux
   tolerations: []
@@ -121,7 +121,7 @@ scheduler:
 
 ui:
   image:
-    repository: keyval/odigos-ui
+    repository: trunganh04/odigos-ui
   nodeSelector:
     kubernetes.io/os: linux
   tolerations: []
@@ -130,7 +130,7 @@ ui:
 instrumentor:
   deleteLangDetectionPods: true
   image:
-    repository: keyval/odigos-instrumentor
+    repository: trunganh04/odigos-instrumentor
   nodeSelector:
     kubernetes.io/os: linux
   tolerations: []

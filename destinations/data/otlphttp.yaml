@@ -42,3 +42,13 @@ spec:
         tooltip: in case the otlp receiver requires basic auth, this is the password
       secret: true
 
+    - name: OTLP_HTTP_AUTH_HEADER_KEY
+      displayName: AUTH HEADER VALUES
+      componentType: input
+      componentProps:
+        type: password
+        required: false
+        placeholder: "x-api-key"
+        tooltip: in case the otlp receiver requires header auth key
+      secret: true
+
