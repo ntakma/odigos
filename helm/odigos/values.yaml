@@ -1,5 +1,5 @@
 image:
-  tag: "v1.0.139"
+  tag: ""
 imagePullSecrets: []
 
 # namespaces not to show in odigos ui
@@ -130,7 +130,7 @@ ui:
 instrumentor:
   deleteLangDetectionPods: true
   image:
-    repository: trunganh04/odigos-instrumentor
+    repository: keyval/odigos-instrumentor
   nodeSelector:
     kubernetes.io/os: linux
   tolerations: []
